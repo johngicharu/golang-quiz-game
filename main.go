@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -81,7 +82,7 @@ func main() {
 			break
 		}
 
-		if answer == p.a {
+		if answer == strings.TrimSpace(p.a) {
 			correct_answers++
 		}
 	}
