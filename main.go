@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,8 +12,8 @@ import (
 var correct_answers = 0
 var items_len = 0
 
-func exitProgram() int {
-	fmt.Printf("\nYou scored %v out of %v.\n", correct_answers, items_len)
+func exitProgram(msg string) int {
+	fmt.Printf(msg)
 
 	return 3
 }
@@ -23,16 +24,20 @@ func prog_signals() {
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
 
 	<-ch
-	defer os.Exit(exitProgram())
+	defer os.Exit(exitProgram(fmt.Sprintf("\nYou scored %v out of %v.\n", correct_answers, items_len)))
 }
 
 func main() {
 	go prog_signals()
 
-	file, err := os.Open("./problems.csv")
+	csvFilename := flag.String("csv", "problems.csv", "a csv file in the format of 'question,answer'")
+
+	flag.Parse()
+
+	file, err := os.Open(*csvFilename)
 
 	if err != nil {
-		fmt.Println("Error Opening File: ", err)
+		exitProgram(fmt.Sprintf("Error Opening the CSV File: %s\n", *csvFilename))
 	}
 
 	// Close file once the function is done running
@@ -62,5 +67,5 @@ func main() {
 		}
 	}
 
-	fmt.Printf("You scored %v out of %v.\n", correct_answers, len(items))
+	exitProgram(fmt.Sprintf("You scored %v out of %v.\n", correct_answers, len(items)))
 }
