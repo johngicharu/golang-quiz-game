@@ -12,6 +12,11 @@ import (
 var correct_answers = 0
 var items_len = 0
 
+type problem struct {
+	q string
+	a string
+}
+
 func exitProgram(msg string) int {
 	fmt.Printf(msg)
 
@@ -25,6 +30,16 @@ func prog_signals() {
 
 	<-ch
 	defer os.Exit(exitProgram(fmt.Sprintf("\nYou scored %v out of %v.\n", correct_answers, items_len)))
+}
+
+func parseLines(lines [][]string) []problem {
+	ret := make([]problem, len(lines))
+
+	for i, line := range lines {
+		ret[i] = problem{q: line[0], a: line[1]}
+	}
+
+	return ret
 }
 
 func main() {
@@ -45,25 +60,29 @@ func main() {
 
 	file_reader := csv.NewReader(file)
 
+	// Read the entire csv file entirely
 	items, err := file_reader.ReadAll()
 	items_len = len(items)
 
 	if err != nil {
-		fmt.Println("File Reader Read Error: ", err)
+		exitProgram(fmt.Sprintln("File Reader Read Error: ", err))
 	}
 
-	for i, item := range items {
+	problems := parseLines(items)
+
+	for i, p := range problems {
 		var answer string
-		fmt.Printf("Problem #%v: %v = ", i+1, item[0])
-		_, err := fmt.Scanln(&answer)
+
+		fmt.Printf("Problem #%v: %s = ", i+1, p.q)
+		_, err := fmt.Scanf("%s\n", &answer)
 
 		if err != nil {
-			fmt.Println("Sorry, seems an invalid value was entered")
+			exitProgram("Sorry, seems an invalid value was entered")
 			break
 		}
 
-		if answer == item[1] {
-			correct_answers += 1
+		if answer == p.a {
+			correct_answers++
 		}
 	}
 
